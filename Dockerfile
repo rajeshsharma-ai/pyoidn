@@ -67,9 +67,9 @@ apt-get clean   && \
 rm -rf /var/lib/apt/lists/*
 
 # gitLFS
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y -q --no-install-recommends git-lfs  && \
-apt-get clean   && \
-rm -rf /var/lib/apt/lists/*
+#RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y -q --no-install-recommends git-lfs  && \
+#apt-get clean   && \
+#rm -rf /var/lib/apt/lists/*
 
 # OpenEXR, OpenImageIO
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y -q --no-install-recommends libopenexr-dev openexr libopenimageio-dev   && \
