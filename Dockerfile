@@ -93,7 +93,7 @@ RUN git lfs install; \
     git clone --recursive ${Oidn_REPO}; \
     mkdir oidn/build; \
     cd oidn/build; \
-    cmake -DISPC_EXECUTABLE:STRING=/home/ispc-v${ISPC_VER}-linux/ispc ..; \
+    cmake -DISPC_EXECUTABLE:STRING=/home/ispc-v1.13.0-linux/ispc ..; \
     make -j 4; \
     make install
 
