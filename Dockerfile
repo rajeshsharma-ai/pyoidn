@@ -1,6 +1,3 @@
-FROM ubuntu:18.04 AS build
-WORKDIR /home
-
 # This Dockerfile's base image has a non-root user with sudo access. Use the "remoteUser"
 # property in devcontainer.json to use it. On Linux, the container user's GID/UIDs
 # will be updated to match your local UID/GID (when using the dockerFile property).
@@ -37,19 +34,52 @@ ENV DEBIAN_FRONTEND=noninteractive
 # hadolint ignore=DL3009
 RUN apt-get update && apt-get install -y -q --no-install-recommends build-essential autoconf make git wget pciutils cpio libtool lsb-release ca-certificates pkg-config bison flex libcurl4-gnutls-dev zlib1g-dev cppcheck valgrind
 
+# Install cmake
+ARG CMAKE_VER=3.20.5
+ARG CMAKE_REPO=https://cmake.org/files
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN wget -O - ${CMAKE_REPO}/v${CMAKE_VER%.*}/cmake-${CMAKE_VER}.tar.gz | tar xz && \
+    cd cmake-${CMAKE_VER} && \
+    ./bootstrap --prefix="/usr/local" --system-curl && \
+    make -j4 && \
+    make install
+
+# Install automake, use version 1.14 on CentOS
+ARG AUTOMAKE_VER=1.14
+ARG AUTOMAKE_REPO=https://ftp.gnu.org/pub/gnu/automake/automake-${AUTOMAKE_VER}.tar.xz
+    RUN apt-get install -y -q --no-install-recommends automake  && \
+        apt-get clean   && \
+        rm -rf /var/lib/apt/lists/*
+
+# Build NASM
+ARG NASM_VER=2.13.03
+ARG NASM_REPO=https://www.nasm.us/pub/nasm/releasebuilds/${NASM_VER}/nasm-${NASM_VER}.tar.bz2
+RUN  wget ${NASM_REPO} && \
+     tar -xaf nasm* && \
+     cd nasm-${NASM_VER} && \
+     ./autogen.sh && \
+     ./configure --prefix="/usr/local" --libdir=/usr/local/lib/x86_64-linux-gnu && \
+     make -j4 && \
+     make install
+
+# Build YASM
+ARG YASM_VER=1.3.0
+ARG YASM_REPO=https://www.tortall.net/projects/yasm/releases/yasm-${YASM_VER}.tar.gz
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN  wget -O - ${YASM_REPO} | tar xz && \
+     cd yasm-${YASM_VER} && \
+     sed -i "s/) ytasm.*/)/" Makefile.in && \
+     ./configure --prefix="/usr/local" --libdir=/usr/local/lib/x86_64-linux-gnu && \
+     make -j4 && \
+     make install
+
 # Build ISPC
-ARG ISPC_VER=1.13.0
-ARG ISPC_REPO=https://github.com/ispc/ispc/releases/download/v1.13.0/ispc-v1.13.0-linux.tar.gz
-#ARG ISPC_REPO=https://downloads.sourceforge.net/project/ispcmirror/v${ISPC_VER}/ispc-v${ISPC_VER}-linux.tar.gz
+ARG ISPC_VER=1.16.0
+#https://github.com/ispc/ispc/releases/download/v1.16.0/ispc-v1.16.0-linux.tar.gz
+ARG ISPC_REPO=https://github.com/ispc/ispc/releases/download/v${ISPC_VER}/ispc-v${ISPC_VER}-linux.tar.gz
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN wget -O - ${ISPC_REPO} | tar xz
 ENV ISPC_EXECUTABLE=/home/ispc-v${ISPC_VER}-linux/ispc
-
-
-# Build cmake, automake, NASM, YASM
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y -q --no-install-recommends cmake automake yasm nasm && \
-    apt-get clean       && \
-    rm -rf /var/lib/apt/lists/*
 
 # Build TBB
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y -q --no-install-recommends libtbb-dev && \
@@ -67,9 +97,9 @@ apt-get clean   && \
 rm -rf /var/lib/apt/lists/*
 
 # gitLFS
-#RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y -q --no-install-recommends git-lfs  && \
-#apt-get clean   && \
-#rm -rf /var/lib/apt/lists/*
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y -q --no-install-recommends git-lfs  && \
+apt-get clean   && \
+rm -rf /var/lib/apt/lists/*
 
 # OpenEXR, OpenImageIO
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y -q --no-install-recommends libopenexr-dev openexr libopenimageio-dev   && \
@@ -93,7 +123,7 @@ RUN git lfs install; \
     git clone --recursive ${Oidn_REPO}; \
     mkdir oidn/build; \
     cd oidn/build; \
-    cmake -DISPC_EXECUTABLE:STRING=/home/ispc-v1.13.0-linux/ispc ..; \
+    cmake ..; \
     make -j 4; \
     make install
 
@@ -106,18 +136,18 @@ RUN git lfs install; \
 #    rm -rf /var/lib/apt/lists/*
 
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN mkdir -p /var/run/sshd; \
-    sed -i 's/^#Port/Port/g' /etc/ssh/sshd_config; \
-    sed -i 's/^Port 22/Port 2222/g' /etc/ssh/sshd_config; \
-    sed -i 's/^#PermitRootLogin/PermitRootLogin/g' /etc/ssh/sshd_config; \
-    sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config; \
-    sed -i 's/#   Port 22/Port 2222/g' /etc/ssh/ssh_config; \
-    echo 'root:ospray' |chpasswd; \
-    /usr/sbin/sshd-keygen; \
-    sed -i 's/#   StrictHostKeyChecking ask/   StrictHostKeyChecking no/g' /etc/ssh/ssh_config; \
-    /usr/bin/ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa; \
-    cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
+#SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+#RUN mkdir -p /var/run/sshd; \
+#    sed -i 's/^#Port/Port/g' /etc/ssh/sshd_config; \
+#    sed -i 's/^Port 22/Port 2222/g' /etc/ssh/sshd_config; \
+#    sed -i 's/^#PermitRootLogin/PermitRootLogin/g' /etc/ssh/sshd_config; \
+#    sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config; \
+#    sed -i 's/#   Port 22/Port 2222/g' /etc/ssh/ssh_config; \
+#    echo 'root:ospray' |chpasswd; \
+#    /usr/sbin/sshd-keygen; \
+#    sed -i 's/#   StrictHostKeyChecking ask/   StrictHostKeyChecking no/g' /etc/ssh/ssh_config; \
+#    /usr/bin/ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa; \
+#    cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
 
 FROM build
 LABEL Description="This is the image for development on Ubuntu 18.04 LTS"
