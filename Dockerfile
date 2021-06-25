@@ -128,20 +128,6 @@ RUN git lfs install; \
     make install
 
 
-
-#SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-#RUN mkdir -p /var/run/sshd; \
-#    sed -i 's/^#Port/Port/g' /etc/ssh/sshd_config; \
-#    sed -i 's/^Port 22/Port 2222/g' /etc/ssh/sshd_config; \
-#    sed -i 's/^#PermitRootLogin/PermitRootLogin/g' /etc/ssh/sshd_config; \
-#    sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config; \
-#    sed -i 's/#   Port 22/Port 2222/g' /etc/ssh/ssh_config; \
-#    echo 'root:ospray' |chpasswd; \
-#    /usr/sbin/sshd-keygen; \
-#    sed -i 's/#   StrictHostKeyChecking ask/   StrictHostKeyChecking no/g' /etc/ssh/ssh_config; \
-#    /usr/bin/ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa; \
-#    cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
-
 FROM build
 LABEL Description="This is the image for development on Ubuntu 18.04 LTS"
 LABEL Vendor="xarmalarma"
