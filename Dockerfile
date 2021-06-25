@@ -1,3 +1,5 @@
+FROM ubuntu:18.04 AS build
+WORKDIR /home
 # This Dockerfile's base image has a non-root user with sudo access. Use the "remoteUser"
 # property in devcontainer.json to use it. On Linux, the container user's GID/UIDs
 # will be updated to match your local UID/GID (when using the dockerFile property).
