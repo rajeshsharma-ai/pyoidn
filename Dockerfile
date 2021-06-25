@@ -127,13 +127,6 @@ RUN git lfs install; \
     make -j 4; \
     make install
 
-#RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y -q --no-install-recommends libglfw3-dev libgl1-mesa-dri libxrandr-dev  libxinerama-dev libxcursor-dev  && \
-#apt-get clean  && \
-#rm -rf /var/lib/apt/lists/*
-
-#RUN apt-get update && apt-get install -y -q --no-install-recommends libglfw3-dev libgl1-mesa-dri libxrandr-dev  libxinerama-dev libxcursor-dev libmpich-dev mpich openssh-server openssh-client        && \
-#    apt-get clean      && \
-#    rm -rf /var/lib/apt/lists/*
 
 
 #SHELL ["/bin/bash", "-o", "pipefail", "-c"]
