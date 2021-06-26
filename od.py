@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import imageio
 import pyoidn
 import numpy as np
@@ -14,6 +15,9 @@ def denoiseDir(idir, odir):
 def denoiseFile(infile, outfile):
     # read the image file (noisy)
     im = imageio.imread(infile)
+
+    # remove alpha channel if any
+    im = im[:,:,:3]
 
     # scale and convert to float32
     im = (im/255.0).astype(np.float32)
