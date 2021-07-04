@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import imageio
 import pyoidn
 import numpy as np
