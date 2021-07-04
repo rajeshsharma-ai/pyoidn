@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+
+"""Script to test the python bindings to OIDN
+
+This script allows the user to print to the console all columns in the
+spreadsheet. It is assumed that the input file is some image file, normal or 
+albedo is not used in this test. 
+
+There is an alternate (commented out) function to convert an entire directory of image files. 
+"""
 import imageio
 import pyoidn
 import numpy as np
@@ -24,7 +33,6 @@ def denoiseFile(infile, outfile):
 
     #### run the denoiser ###
     im = pyoidn.run_oidn(im, None, None)
-    #im = pyoidn.run_oidn(im)
 
     # scale and convert to uint8
     im = (im*255).round().astype(np.uint8)
@@ -35,7 +43,10 @@ def denoiseFile(infile, outfile):
 def main(argv):
     ifilename = argv[0]
     ofilename = argv[1]
+    # denoise a single file
     denoiseFile(ifilename, ofilename)
+    # denoise all files in the directory
+    # denoiseDir(inputDirr, outputDir)
 
 if __name__ == "__main__":
     args = sys.argv
