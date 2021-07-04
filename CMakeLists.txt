@@ -13,7 +13,11 @@ target_link_libraries(pyoidn "${OIDN_LIB}" "${PYTHON_LIBRARY}")
 # for the std::optional
 target_compile_features(pyoidn PUBLIC cxx_std_17)
 
-#set(SCRIPT_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/<...>)
 set(CMAKE_INSTALL_PREFIX .)
 install(TARGETS pyoidn  DESTINATION install)
-install(FILES od.py bistro2_16spp_input.jpg DESTINATION install)
+install(FILES bistro2_16spp_input.jpg DESTINATION install)
+install(
+    FILES od.py
+    PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+    DESTINATION install
+)
