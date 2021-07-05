@@ -2,9 +2,8 @@
 
 """Script to test the python bindings to OIDN
 
-This script allows the user to print to the console all columns in the
-spreadsheet. It is assumed that the input file is some image file, normal or 
-albedo is not used in this test. 
+It is assumed that the input file is some image file. 
+normal or albedo is not used in this test. 
 
 There is an alternate (commented out) function to convert an entire directory of image files. 
 """
